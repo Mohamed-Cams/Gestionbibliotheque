@@ -1,0 +1,39 @@
+server:
+  # 8080 est deja utilise par Camunda 8 (API REST)
+  port: 8081
+
+
+spring:
+  application:
+    name: gestion-bibliotheque-backend
+  datasource:
+    url: jdbc:mysql://localhost:3306/gestion_bibliotheque
+    username: root
+    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    open-in-view: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+    show-sql: true
+    hibernate.ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQLDialect
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: walyfaye265@gmail.com
+    password: xiptbxujaewvqyaz
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+camunda:
+  client:
+    mode: self-managed
+    prefer-rest-over-grpc: false
+    auth:
+      method: none
+    grpc-address: http://localhost:26500
+    rest-address: http://localhost:8080
