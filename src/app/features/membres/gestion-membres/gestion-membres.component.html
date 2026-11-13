@@ -1,0 +1,49 @@
+<header class="page-head">
+  <div>
+    <h1>Membres</h1>
+    <p>Les personnes qui empruntent. L'email sert à envoyer la confirmation d'emprunt.</p>
+  </div>
+  <div class="outils">
+    <button type="button" class="btn btn-primary" (click)="nouveau()">Ajouter un membre</button>
+  </div>
+</header>
+
+@if (panneau()) {
+  <form class="panel" #f="ngForm" (ngSubmit)="enregistrer()">
+    <h2>{{ form.id ? 'Modifier le membre' : 'Nouveau membre' }}</h2>
+    <div class="fields">
+      <label>Prénom <input name="prenom" [(ngModel)]="form.prenom" required></label>
+      <label>Nom <input name="nom" [(ngModel)]="form.nom" required></label>
+      <label>Email <input name="email" type="email" [(ngModel)]="form.email" required email></label>
+      <label>Téléphone <input name="telephone" type="tel" [(ngModel)]="form.telephone"></label>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" [disabled]="f.invalid">Enregistrer</button>
+      <button type="button" class="btn" (click)="panneau.set(false)">Annuler</button>
+    </div>
+  </form>
+}
+
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Nom</th><th>Email</th><th>Téléphone</th><th><span class="sr">Actions</span></th></tr></thead>
+    <tbody>
+      @for (m of membres(); track m.id) {
+        <tr>
+          <td><span class="titre-livre">{{ m.prenom }} {{ m.nom }}</span></td>
+          <td>{{ m.email }}</td>
+          <td class="discret">{{ m.telephone || '—' }}</td>
+          <td class="cellule-actions">
+            <button type="button" class="btn btn-petit" (click)="modifier(m)">Modifier</button>
+            <button type="button" class="btn btn-petit btn-danger" (click)="supprimer(m)">Supprimer</button>
+          </td>
+        </tr>
+      } @empty {
+        <tr><td colspan="4"><div class="vide">
+          <strong>Aucun membre pour le moment</strong>
+          Ajoutez un membre pour pouvoir lui prêter un livre.
+        </div></td></tr>
+      }
+    </tbody>
+  </table>
+</div>

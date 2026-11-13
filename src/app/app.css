@@ -1,0 +1,42 @@
+.shell { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+
+.side {
+  background: var(--encre); color: #e8efe9;
+  padding: 1.6rem 1rem; display: flex; flex-direction: column; gap: .2rem;
+  position: sticky; top: 0; height: 100vh;
+}
+.marque {
+  font-family: var(--titre); font-size: 1.35rem; color: #fff; text-decoration: none;
+  margin: 0 .6rem 1.6rem; display: grid;
+}
+.marque small { font-family: var(--corps); font-size: .82rem; color: #a9bdb2; }
+
+.side a:not(.marque) {
+  color: #d3e0d8; text-decoration: none; padding: .55rem .8rem;
+  border-radius: 6px; border-left: 4px solid transparent;
+}
+.side a:not(.marque):hover { background: var(--encre-2); }
+.side a.actif { background: var(--encre-2); border-left-color: #d9a441; color: #fff; font-weight: 600; }
+
+main { padding: 2rem clamp(1rem, 3vw, 2.6rem) 4rem; min-width: 0; }
+
+.toast {
+  position: fixed; right: 1.2rem; bottom: 1.2rem; max-width: min(28rem, calc(100vw - 2.4rem));
+  display: flex; gap: 1rem; align-items: center; justify-content: space-between;
+  background: var(--encre); color: #fff; padding: .8rem 1rem; border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .25);
+}
+.toast-erreur { background: var(--danger); }
+.toast button {
+  font: inherit; background: none; color: inherit; border: 1px solid rgba(255, 255, 255, .5);
+  border-radius: 6px; padding: .2rem .6rem; cursor: pointer;
+}
+
+@media (max-width: 760px) {
+  .shell { grid-template-columns: 1fr; }
+  .side { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; padding: .8rem; gap: .3rem; }
+  .marque { margin: 0 1rem 0 .2rem; }
+  .marque small { display: none; }
+  .side a:not(.marque) { border-left: 0; border-bottom: 3px solid transparent; border-radius: 6px 6px 0 0; }
+  .side a.actif { border-bottom-color: #d9a441; }
+}

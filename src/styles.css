@@ -1,0 +1,102 @@
+:root {
+  --encre: #17352e;
+  --encre-2: #24493f;
+  --papier: #f5f6f2;
+  --surface: #ffffff;
+  --trait: #dde2d9;
+  --texte: #1c2521;
+  --discret: #5b685f;
+  --laiton: #7d5410;
+  --laiton-fond: #f6ecd6;
+  --ok: #2c7551;
+  --ok-fond: #e1f0e8;
+  --danger: #b3392f;
+  --danger-fond: #f8e3e0;
+  --titre: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --corps: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--papier);
+  color: var(--texte);
+  font: 15px/1.5 var(--corps);
+}
+
+h1, h2 { font-family: var(--titre); font-weight: 600; margin: 0; }
+h1 { font-size: 1.9rem; }
+h2 { font-size: 1.2rem; margin-bottom: .9rem; }
+
+:focus-visible { outline: 3px solid var(--laiton); outline-offset: 2px; }
+
+.page-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; flex-wrap: wrap; margin-bottom: 1.4rem;
+}
+.page-head p { margin: .2rem 0 0; color: var(--discret); max-width: 60ch; }
+.page-head .outils { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
+
+/* boutons */
+.btn {
+  font: inherit; font-weight: 600; cursor: pointer;
+  padding: .5rem .95rem; border-radius: 6px;
+  border: 1px solid var(--trait); background: var(--surface); color: var(--texte);
+}
+.btn:hover { border-color: var(--discret); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-primary { background: var(--encre); border-color: var(--encre); color: #fff; }
+.btn-primary:hover { background: var(--encre-2); border-color: var(--encre-2); }
+.btn-danger { color: var(--danger); }
+.btn-danger:hover { border-color: var(--danger); }
+.btn-petit { padding: .3rem .65rem; font-size: .88rem; }
+
+/* formulaires */
+.panel {
+  background: var(--surface); border: 1px solid var(--trait);
+  border-radius: 8px; padding: 1.2rem 1.3rem; margin-bottom: 1.4rem;
+  max-width: 760px;
+}
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: .9rem 1rem; }
+.fields label { display: grid; gap: .25rem; font-weight: 600; font-size: .9rem; }
+.fields input, .fields select, .recherche {
+  font: inherit; font-weight: 400; padding: .5rem .6rem;
+  border: 1px solid #b9c2b6; border-radius: 6px; background: #fff; color: var(--texte);
+  width: 100%;
+}
+.recherche { width: 16rem; }
+.actions { display: flex; gap: .6rem; margin-top: 1.1rem; }
+.aide { color: var(--discret); font-size: .85rem; font-weight: 400; }
+
+/* tableaux : le liseré gauche est la "tranche" du livre */
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--trait); border-radius: 8px; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-weight: 600; color: var(--discret); font-size: .88rem; }
+th, td { padding: .75rem 1rem; border-bottom: 1px solid var(--trait); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: 0; }
+td.cellule-actions { white-space: nowrap; text-align: right; display: flex; gap: .4rem; justify-content: flex-end; }
+.etat-ok   td:first-child { box-shadow: inset 5px 0 0 var(--ok); }
+.etat-pris td:first-child { box-shadow: inset 5px 0 0 var(--laiton); }
+.etat-retard td:first-child { box-shadow: inset 5px 0 0 var(--danger); }
+.etat-fini td:first-child { box-shadow: inset 5px 0 0 var(--trait); color: var(--discret); }
+.titre-livre { font-family: var(--titre); font-size: 1.05rem; }
+.discret { color: var(--discret); font-size: .88rem; }
+
+.tag { display: inline-block; padding: .1rem .55rem; border-radius: 999px; font-size: .82rem; font-weight: 600; }
+.tag-ok { background: var(--ok-fond); color: var(--ok); }
+.tag-pris { background: var(--laiton-fond); color: var(--laiton); }
+.tag-retard { background: var(--danger-fond); color: var(--danger); }
+.tag-fini { background: #eceee9; color: var(--discret); }
+
+.vide { padding: 2.2rem 1.2rem; color: var(--discret); text-align: center; }
+.vide strong { display: block; color: var(--texte); font-family: var(--titre); font-size: 1.1rem; margin-bottom: .2rem; }
+
+@media (max-width: 640px) {
+  th, td { padding: .6rem .7rem; }
+}
+
+.sr {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}

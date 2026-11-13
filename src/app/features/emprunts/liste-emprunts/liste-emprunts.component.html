@@ -1,0 +1,92 @@
+<header class="page-head">
+  <div>
+    <h1>Emprunts</h1>
+    <p>Créer un emprunt envoie une confirmation par email au membre et ouvre le suivi du retour dans Camunda.</p>
+  </div>
+  <div class="outils">
+    <button type="button" class="btn btn-primary" (click)="nouveau()">Nouvel emprunt</button>
+  </div>
+</header>
+
+@if (panneau()) {
+  <form class="panel" #f="ngForm" (ngSubmit)="creer()">
+    <h2>Nouvel emprunt</h2>
+    <div class="fields">
+      <label>Livre
+        <select name="livre" [(ngModel)]="form.livreNumero" required>
+          <option [ngValue]="null" disabled>Choisir un livre disponible</option>
+          @for (l of disponibles(); track l.numero) {
+            <option [ngValue]="l.numero">{{ l.titre }} — {{ l.auteur }}</option>
+          }
+        </select>
+      </label>
+      <label>Membre
+        <select name="membre" [(ngModel)]="form.membreId" required>
+          <option [ngValue]="null" disabled>Choisir un membre</option>
+          @for (m of membres(); track m.id) {
+            <option [ngValue]="m.id">{{ m.prenom }} {{ m.nom }}</option>
+          }
+        </select>
+      </label>
+      <label>Retour prévu
+        <input name="date" type="date" [min]="aujourdhui" [(ngModel)]="form.dateRetourPrevue">
+        <span class="aide">Laissez vide pour 14 jours.</span>
+      </label>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" [disabled]="f.invalid || envoi()">Créer l'emprunt</button>
+      <button type="button" class="btn" (click)="panneau.set(false)">Annuler</button>
+    </div>
+  </form>
+}
+
+@if (edition(); as e) {
+  <form class="panel" #g="ngForm" (ngSubmit)="changerDate()">
+    <h2>Changer la date de retour</h2>
+    <div class="fields">
+      <label>{{ e.livreTitre }} — {{ e.membreNomComplet }}
+        <input name="nouvelle" type="date" [min]="e.dateEmprunt" [(ngModel)]="nouvelleDate" required>
+      </label>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" [disabled]="g.invalid">Enregistrer</button>
+      <button type="button" class="btn" (click)="edition.set(null)">Annuler</button>
+    </div>
+  </form>
+}
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Livre</th><th>Membre</th><th>Emprunté le</th><th>Retour prévu</th><th>État</th><th><span class="sr">Actions</span></th></tr>
+    </thead>
+    <tbody>
+      @for (e of emprunts(); track e.id) {
+        <tr [class.etat-pris]="e.statut === 'EN_COURS' && !retard(e)"
+            [class.etat-retard]="retard(e)" [class.etat-fini]="e.statut === 'RETOURNE'">
+          <td><span class="titre-livre">{{ e.livreTitre }}</span></td>
+          <td>{{ e.membreNomComplet }}</td>
+          <td>{{ fr(e.dateEmprunt) }}</td>
+          <td>{{ fr(e.dateRetourPrevue) }}</td>
+          <td>
+            @if (e.statut === 'RETOURNE') { <span class="tag tag-fini">Rendu le {{ fr(e.dateRetourEffective) }}</span> }
+            @else if (retard(e)) { <span class="tag tag-retard">En retard</span> }
+            @else { <span class="tag tag-pris">En cours</span> }
+          </td>
+          <td class="cellule-actions">
+            @if (e.statut === 'EN_COURS') {
+              <button type="button" class="btn btn-petit" (click)="rendre(e)">Enregistrer le retour</button>
+              <button type="button" class="btn btn-petit" (click)="ouvrirDate(e)">Changer la date</button>
+            }
+            <button type="button" class="btn btn-petit btn-danger" (click)="supprimer(e)">Supprimer</button>
+          </td>
+        </tr>
+      } @empty {
+        <tr><td colspan="6"><div class="vide">
+          <strong>Aucun emprunt pour le moment</strong>
+          Créez un emprunt pour qu'il apparaisse ici et dans « À traiter ».
+        </div></td></tr>
+      }
+    </tbody>
+  </table>
+</div>

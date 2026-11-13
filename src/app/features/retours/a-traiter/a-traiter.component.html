@@ -1,0 +1,50 @@
+<header class="page-head">
+  <div>
+    <h1>À traiter</h1>
+    <p>Les livres sortis et attendus au retour. Cette liste vient de Camunda et se rafraîchit toute seule.</p>
+  </div>
+  <div class="outils">
+    <button type="button" class="btn" (click)="charger(true)">Actualiser</button>
+  </div>
+</header>
+
+@if (injoignable()) {
+  <div class="table-wrap"><div class="vide">
+    <strong>Camunda ne répond pas</strong>
+    Vérifiez que Camunda est démarré. Nouvel essai automatique toutes les 8 secondes.
+  </div></div>
+} @else if (!charge()) {
+  <div class="table-wrap"><div class="vide">Chargement…</div></div>
+} @else {
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Livre</th><th>Emprunteur</th><th>Retour prévu</th><th>Tâche créée</th><th><span class="sr">Action</span></th></tr>
+      </thead>
+      <tbody>
+        @for (t of taches(); track t.userTaskKey) {
+          <tr [class.etat-pris]="!retard(t)" [class.etat-retard]="retard(t)">
+            <td><span class="titre-livre">{{ t.emprunt.livreTitre }}</span></td>
+            <td>{{ t.emprunt.membreNomComplet }}</td>
+            <td>
+              {{ fr(t.emprunt.dateRetourPrevue) }}
+              @if (retard(t)) { <span class="tag tag-retard">En retard</span> }
+            </td>
+            <td class="discret">{{ frHeure(t.creeLe) }}</td>
+            <td class="cellule-actions">
+              <button type="button" class="btn btn-primary btn-petit"
+                      [disabled]="occupe() === t.emprunt.id" (click)="rendre(t)">
+                Enregistrer le retour
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="5"><div class="vide">
+            <strong>Aucun retour en attente</strong>
+            Un emprunt apparaît ici dès que la notification au membre est partie.
+          </div></td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
