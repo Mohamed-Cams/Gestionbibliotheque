@@ -19,6 +19,7 @@
 .side a.actif { background: var(--encre-2); border-left-color: #d9a441; color: #fff; font-weight: 600; }
 
 main { padding: 2rem clamp(1rem, 3vw, 2.6rem) 4rem; min-width: 0; }
+main.page-connexion { padding: 0; }
 
 .toast {
   position: fixed; right: 1.2rem; bottom: 1.2rem; max-width: min(28rem, calc(100vw - 2.4rem));

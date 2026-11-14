@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { Api } from '../../../core/services/api.service';
 import { Livre } from '../../../core/models';
 import { Notif } from '../../../core/services/notif.service';
@@ -8,7 +9,7 @@ const vide = (): Livre => ({ titre: '', auteur: '', categorie: '' });
 
 @Component({
   selector: 'app-liste-livres',
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   templateUrl: './liste-livres.component.html',
   styleUrl: './liste-livres.component.css'
 })

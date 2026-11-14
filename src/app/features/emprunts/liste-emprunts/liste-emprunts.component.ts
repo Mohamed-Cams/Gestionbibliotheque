@@ -1,15 +1,15 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { Api } from '../../../core/services/api.service';
-import { aujourdhui, enRetard, fr } from '../../../dates';
-import { Emprunt, EmpruntRequest, Livre, Membre } from '../../../core/models';
+import { enRetard, fr } from '../../../dates';
+import { Emprunt } from '../../../core/models';
 import { Notif } from '../../../core/services/notif.service';
 
-const vide = (): EmpruntRequest => ({ livreNumero: null, membreId: null, dateRetourPrevue: null });
 
 @Component({
   selector: 'app-liste-emprunts',
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   templateUrl: './liste-emprunts.component.html',
   styleUrl: './liste-emprunts.component.css'
 })
@@ -18,57 +18,29 @@ export class ListeEmpruntsComponent {
   private notif = inject(Notif);
 
   emprunts = signal<Emprunt[]>([]);
-  livres = signal<Livre[]>([]);
-  membres = signal<Membre[]>([]);
-  disponibles = computed(() => this.livres().filter(l => l.disponible));
 
-  panneau = signal(false);
   envoi = signal(false);
   edition = signal<Emprunt | null>(null);
-  form: EmpruntRequest = vide();
   nouvelleDate = '';
 
   protected fr = fr;
   protected retard = enRetard;
-  protected aujourdhui = aujourdhui();
 
   constructor() { this.charger(); }
 
   charger() {
     this.api.emprunts.lister().subscribe({ next: l => this.emprunts.set(l), error: e => this.notif.ko(e) });
-    this.api.livres.lister().subscribe({ next: l => this.livres.set(l), error: e => this.notif.ko(e) });
-    this.api.membres.lister().subscribe({ next: m => this.membres.set(m), error: e => this.notif.ko(e) });
   }
 
-  nouveau() { this.form = vide(); this.edition.set(null); this.panneau.set(true); }
-
-  creer() {
-    this.envoi.set(true);
-    this.api.emprunts.creer({ ...this.form, dateRetourPrevue: this.form.dateRetourPrevue || null }).subscribe({
-      next: e => {
-        this.envoi.set(false);
-        this.panneau.set(false);
-        this.notif.ok(`Emprunt créé : ${e.livreTitre}`);
-        this.charger();
-      },
-      error: err => { this.envoi.set(false); this.notif.ko(err); }
-    });
-  }
-
-  ouvrirDate(e: Emprunt) { this.panneau.set(false); this.nouvelleDate = e.dateRetourPrevue; this.edition.set(e); }
+  ouvrirDate(e: Emprunt) { this.nouvelleDate = e.dateRetourPrevue; this.edition.set(e); }
 
   changerDate() {
-    const e = this.edition()!;
+    const e = this.edition();
+    if (!e || this.envoi()) return;
+    this.envoi.set(true);
     this.api.emprunts.modifier(e.id, { dateRetourPrevue: this.nouvelleDate }).subscribe({
-      next: () => { this.edition.set(null); this.notif.ok('Date de retour modifiée'); this.charger(); },
-      error: err => this.notif.ko(err)
-    });
-  }
-
-  rendre(e: Emprunt) {
-    this.api.retour(e.id).subscribe({
-      next: () => { this.notif.ok(`Retour enregistré : ${e.livreTitre}`); this.charger(); },
-      error: err => this.notif.ko(err)
+      next: () => { this.envoi.set(false); this.edition.set(null); this.notif.ok('Date de retour modifiée'); this.charger(); },
+      error: err => { this.envoi.set(false); this.notif.ko(err); }
     });
   }
 

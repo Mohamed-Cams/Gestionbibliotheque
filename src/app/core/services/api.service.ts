@@ -5,6 +5,7 @@ import { Emprunt, EmpruntATraiter, EmpruntRequest, Livre, Membre } from '../mode
 class Crud<T, C = T> {
   constructor(private http: HttpClient, private base: string) {}
   lister() { return this.http.get<T[]>(`${this.base}/list`); }
+  obtenir(id: number) { return this.http.get<T>(`${this.base}/${id}`); }
   creer(corps: C) { return this.http.post<T>(this.base, corps); }
   modifier(id: number, corps: unknown) { return this.http.put<T>(`${this.base}/${id}`, corps); }
   supprimer(id: number) { return this.http.delete<void>(`${this.base}/${id}`); }

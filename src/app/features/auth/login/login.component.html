@@ -3,18 +3,18 @@
     <h1>Connexion</h1>
     <p>Accédez à la gestion de la bibliothèque.</p>
 
-    <form>
+    <form #f="ngForm" (ngSubmit)="connecter()">
       <label>
         Email
-        <input type="email" placeholder="admin@bibliotheque.fr" />
+        <input type="email" name="email" [(ngModel)]="email" placeholder="admin@bibliotheque.fr" autocomplete="username" required email />
       </label>
 
       <label>
         Mot de passe
-        <input type="password" placeholder="••••••••" />
+        <input type="password" name="motDePasse" [(ngModel)]="motDePasse" placeholder="••••••••" autocomplete="current-password" required />
       </label>
 
-      <button type="submit">Se connecter</button>
+      <button type="submit" [disabled]="f.invalid || envoi()">{{ envoi() ? 'Connexion…' : 'Se connecter' }}</button>
     </form>
   </div>
 </section>

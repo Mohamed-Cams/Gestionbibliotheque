@@ -1,0 +1,37 @@
+<header class="page-head">
+  <div><h1>Nouvel emprunt</h1><p>Enregistrer un prêt et envoyer une confirmation au membre par email.</p></div>
+  <a class="btn" routerLink="/emprunts">Retour aux emprunts</a>
+</header>
+@if (chargement()) {
+  <div class="panel">Chargement…</div>
+} @else if (erreur()) {
+  <div class="panel"><p>Impossible de charger les livres et les membres.</p><button class="btn" (click)="charger()">Réessayer</button></div>
+} @else {
+  <form class="panel" #f="ngForm" (ngSubmit)="creer()">
+    <h2>Informations de l'emprunt</h2>
+    @if (!disponibles().length) { <p>Aucun livre disponible. <a routerLink="/livres">Voir le catalogue</a></p> }
+    @if (!membres().length) { <p>Ajoutez un <a routerLink="/membres">membre</a> avant de créer un emprunt.</p> }
+    <div class="fields">
+      <label>Livre
+        <select name="livre" [(ngModel)]="form.livreNumero" required>
+          <option [ngValue]="null" disabled>Choisir un livre disponible</option>
+          @for (l of disponibles(); track l.numero) { <option [ngValue]="l.numero">{{ l.titre }} — {{ l.auteur }}</option> }
+        </select>
+      </label>
+      <label>Membre
+        <select name="membre" [(ngModel)]="form.membreId" required>
+          <option [ngValue]="null" disabled>Choisir un membre</option>
+          @for (m of membres(); track m.id) { <option [ngValue]="m.id">{{ m.prenom }} {{ m.nom }}</option> }
+        </select>
+      </label>
+      <label>Retour prévu
+        <input name="date" type="date" [min]="aujourdhui" [(ngModel)]="form.dateRetourPrevue">
+        <span class="aide">Laissez vide pour 14 jours.</span>
+      </label>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" [disabled]="f.invalid || envoi()">{{ envoi() ? 'Enregistrement…' : "Créer l'emprunt" }}</button>
+      <a class="btn" routerLink="/emprunts">Annuler</a>
+    </div>
+  </form>
+}

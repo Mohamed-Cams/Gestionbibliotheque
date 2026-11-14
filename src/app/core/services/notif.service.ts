@@ -13,7 +13,7 @@ export class Notif {
     const h = e as HttpErrorResponse;
     const texte = h.status === 0
       ? 'Le serveur ne répond pas. Vérifiez que le backend tourne sur le port 8081.'
-      : h.error?.message || `Erreur ${h.status}`;
+      : h.error?.message || h.error?.detail || `Erreur ${h.status}`;
     this.afficher(texte, true);
   }
 

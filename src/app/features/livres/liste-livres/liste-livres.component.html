@@ -50,6 +50,7 @@
             }
           </td>
           <td class="cellule-actions">
+            <a class="btn btn-petit" [routerLink]="['/livres', l.numero]">Détail</a>
             <button type="button" class="btn btn-petit" (click)="modifier(l)">Modifier</button>
             <button type="button" class="btn btn-petit btn-danger" (click)="supprimer(l)">Supprimer</button>
           </td>

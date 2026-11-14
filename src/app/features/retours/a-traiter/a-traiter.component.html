@@ -32,10 +32,7 @@
             </td>
             <td class="discret">{{ frHeure(t.creeLe) }}</td>
             <td class="cellule-actions">
-              <button type="button" class="btn btn-primary btn-petit"
-                      [disabled]="occupe() === t.emprunt.id" (click)="rendre(t)">
-                Enregistrer le retour
-              </button>
+              <a class="btn btn-primary btn-petit" [routerLink]="['/emprunts', t.emprunt.id, 'finaliser']">Finaliser l'emprunt</a>
             </td>
           </tr>
         } @empty {

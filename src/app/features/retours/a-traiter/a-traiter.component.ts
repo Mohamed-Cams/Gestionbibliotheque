@@ -1,4 +1,5 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { interval } from 'rxjs';
 import { Api } from '../../../core/services/api.service';
@@ -8,6 +9,7 @@ import { Notif } from '../../../core/services/notif.service';
 
 @Component({
   selector: 'app-a-traiter',
+  imports: [RouterLink],
   templateUrl: './a-traiter.component.html',
   styleUrl: './a-traiter.component.css'
 })
@@ -18,7 +20,6 @@ export class ATraiterComponent {
   taches = signal<EmpruntATraiter[]>([]);
   charge = signal(false);
   injoignable = signal(false);
-  occupe = signal<number | null>(null);
 
   protected fr = fr;
   protected frHeure = frHeure;
@@ -36,15 +37,4 @@ export class ATraiterComponent {
     });
   }
 
-  rendre(t: EmpruntATraiter) {
-    this.occupe.set(t.emprunt.id);
-    this.api.retour(t.emprunt.id).subscribe({
-      next: () => {
-        this.occupe.set(null);
-        this.notif.ok(`Retour enregistré : ${t.emprunt.livreTitre}`);
-        this.taches.update(l => l.filter(x => x.userTaskKey !== t.userTaskKey));
-      },
-      error: e => { this.occupe.set(null); this.notif.ko(e); }
-    });
-  }
 }

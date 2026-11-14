@@ -1,0 +1,22 @@
+<header class="page-head">
+  <div><h1>Détail du livre</h1><p>Les informations du catalogue et la disponibilité du livre.</p></div>
+  <a class="btn" routerLink="/livres">Retour à la liste</a>
+</header>
+@if (chargement()) {
+  <div class="panel">Chargement…</div>
+} @else if (erreur()) {
+  <div class="panel"><p>Impossible de charger ce livre.</p><button class="btn" (click)="charger()">Réessayer</button></div>
+} @else if (livre(); as l) {
+  <section class="panel">
+    <h2>{{ l.titre }}</h2>
+    <dl>
+      <dt>Numéro</dt><dd>{{ l.numero }}</dd>
+      <dt>Auteur</dt><dd>{{ l.auteur }}</dd>
+      <dt>Catégorie</dt><dd>{{ l.categorie || '—' }}</dd>
+      <dt>État</dt><dd><span class="tag" [class.tag-ok]="l.disponible" [class.tag-pris]="!l.disponible">{{ l.disponible ? 'Disponible' : 'Emprunté' }}</span></dd>
+    </dl>
+    @if (l.disponible) {
+      <a class="btn btn-primary" routerLink="/emprunts/nouveau" [queryParams]="{ livre: l.numero }">Emprunter ce livre</a>
+    }
+  </section>
+}

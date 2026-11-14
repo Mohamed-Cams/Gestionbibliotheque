@@ -1,12 +1,15 @@
-<div class="shell">
+<div [class.shell]="auth.utilisateur()">
+  @if (auth.utilisateur()) {
   <nav class="side" aria-label="Navigation principale">
     <a class="marque" routerLink="/">Bibliothèque<small>Gestion des prêts</small></a>
     <a routerLink="/a-traiter" routerLinkActive="actif">À traiter</a>
     <a routerLink="/emprunts" routerLinkActive="actif">Emprunts</a>
     <a routerLink="/livres" routerLinkActive="actif">Livres</a>
     <a routerLink="/membres" routerLinkActive="actif">Membres</a>
+    <button type="button" class="btn" (click)="deconnecter()">Se déconnecter</button>
   </nav>
-  <main>
+  }
+  <main [class.page-connexion]="!auth.utilisateur()">
     <router-outlet />
   </main>
 </div>

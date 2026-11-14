@@ -1,0 +1,34 @@
+<header class="page-head">
+  <div><h1>Finaliser un emprunt</h1><p>Confirmez le retour du livre pour clôturer son emprunt.</p></div>
+  <div class="outils"><a class="btn" routerLink="/a-traiter">À traiter</a><a class="btn" routerLink="/emprunts">Liste des emprunts</a></div>
+</header>
+@if (chargement()) {
+  <div class="panel">Chargement…</div>
+} @else if (erreur()) {
+  <div class="panel"><p>Impossible de charger cet emprunt.</p><button class="btn" (click)="charger()">Réessayer</button></div>
+} @else if (emprunt(); as e) {
+  <section class="panel">
+    <h2>{{ e.livreTitre }}</h2>
+    <dl>
+      <dt>Membre</dt><dd>{{ e.membreNomComplet }}</dd>
+      <dt>Emprunté le</dt><dd>{{ fr(e.dateEmprunt) }}</dd>
+      <dt>Retour prévu</dt><dd>{{ fr(e.dateRetourPrevue) }}</dd>
+    </dl>
+    @if (e.statut === 'RETOURNE') {
+      <p class="tag tag-fini">Livre rendu le {{ fr(e.dateRetourEffective) }}</p>
+    } @else {
+      @if (injoignable()) {
+        <p>Le suivi du retour est indisponible. Nouvel essai automatique dans quelques secondes.</p>
+      } @else if (!verification()) {
+        <p>Vérification du retour en attente…</p>
+      } @else if (!tache()) {
+        <p>Le retour n'est pas encore prêt à être confirmé. La notification au membre peut être en cours d'envoi.</p>
+      } @else {
+        <p>Le retour est en attente. Confirmez uniquement lorsque le livre a été rendu.</p>
+      }
+      <div class="actions">
+        <button type="button" class="btn btn-primary" [disabled]="!tache() || envoi()" (click)="finaliser()">{{ envoi() ? 'Enregistrement…' : 'Confirmer le retour du livre' }}</button>
+      </div>
+    }
+  </section>
+}
