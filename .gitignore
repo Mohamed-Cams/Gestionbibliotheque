@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+node_modules
+
+# Configuration locale et secrets (jamais sur GitHub)
+/application-local.properties
+/.env
+/.env.*

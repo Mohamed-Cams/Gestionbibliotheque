@@ -64,6 +64,9 @@ public class EmpruntServiceImpl implements EmpruntService {
     @Override
     @Transactional
     public EmpruntResponse creerEmprunt(EmpruntRequest request) {
+        if (request.livreNumero() <= 0 || request.membreId() <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le livre et le membre sont obligatoires");
+        }
         LivreEntity livre = livreRepository.findById(request.livreNumero())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Livre introuvable : " + request.livreNumero()));
@@ -99,6 +102,10 @@ public class EmpruntServiceImpl implements EmpruntService {
         // Toutes les donnees utiles au worker sont passees en variables : il n'a pas besoin de relire la base.
         Map<String, Object> variables = new HashMap<>();
         variables.put("empruntId", emprunt.getId());
+        variables.put("livreNumero", livre.getNumero());
+        variables.put("membreId", membre.getId());
+        variables.put("dateEmprunt", aujourdhui.toString());
+        variables.put("statut", StatutEmprunt.EN_COURS.name());
         variables.put("emailMembre", membre.getEmail());
         variables.put("nomMembre", membre.getPrenom() + " " + membre.getNom());
         variables.put("titreLivre", livre.getTitre());
@@ -137,6 +144,17 @@ public class EmpruntServiceImpl implements EmpruntService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "La date de retour prevue ne peut pas preceder la date d'emprunt");
         }
+        if (emprunt.getProcessInstanceKey() == null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Aucun processus Camunda associe a cet emprunt");
+        }
+        try {
+            camundaClient.newSetVariablesCommand(emprunt.getProcessInstanceKey())
+                    .variables(Map.of("dateRetourPrevue", request.dateRetourPrevue().toString()))
+                    .send().join();
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
+                    "Camunda n'a pas pu modifier la date, modification annulee", e);
+        }
         emprunt.setDateRetourPrevue(request.dateRetourPrevue());
         return EmpruntResponse.from(empruntRepository.save(emprunt));
     }
@@ -146,10 +164,10 @@ public class EmpruntServiceImpl implements EmpruntService {
     public void supprimerEmprunt(int id) {
         EmpruntEntity emprunt = trouver(id);
         if (emprunt.getStatut() == StatutEmprunt.EN_COURS) {
+            annulerProcessus(emprunt);
             LivreEntity livre = emprunt.getLivre();
             livre.setDisponible(true);
             livreRepository.save(livre);
-            annulerProcessus(emprunt);
         }
         empruntRepository.delete(emprunt);
     }
@@ -168,6 +186,7 @@ public class EmpruntServiceImpl implements EmpruntService {
         try {
             var taches = camundaClient.newUserTaskSearchRequest()
                     .filter(f -> f.processInstanceKey(emprunt.getProcessInstanceKey())
+                            .bpmnProcessId(PROCESSUS_EMPRUNT_ID).elementId("Task_Retour")
                             .state(UserTaskState.CREATED))
                     .page(p -> p.limit(1))
                     .send()
@@ -180,6 +199,8 @@ public class EmpruntServiceImpl implements EmpruntService {
             }
 
             camundaClient.newCompleteUserTaskCommand(taches.items().get(0).getUserTaskKey())
+                    .variables(Map.of("statut", StatutEmprunt.RETOURNE.name(),
+                            "dateRetourEffective", LocalDate.now().toString()))
                     .send()
                     .join();
         } catch (ResponseStatusException e) {
@@ -201,22 +222,28 @@ public class EmpruntServiceImpl implements EmpruntService {
     @Override
     public List<EmpruntATraiterResponse> listerEmpruntsATraiter() {
         try {
-            var taches = camundaClient.newUserTaskSearchRequest()
-                    .filter(f -> f.state(UserTaskState.CREATED))
-                    .sort(s -> s.creationDate().asc())
-                    .page(p -> p.limit(100))
-                    .send()
-                    .join();
-
             List<EmpruntATraiterResponse> resultat = new ArrayList<>();
-            for (var tache : taches.items()) {
-                // On rattache chaque tache a son emprunt via la cle d'instance de processus
-                empruntRepository.findByProcessInstanceKey(tache.getProcessInstanceKey())
-                        .ifPresent(emprunt -> resultat.add(new EmpruntATraiterResponse(
-                                tache.getUserTaskKey(),
-                                tache.getName(),
-                                String.valueOf(tache.getCreationDate()),
-                                EmpruntResponse.from(emprunt))));
+            int offset = 0;
+            while (true) {
+                final int debut = offset;
+                var taches = camundaClient.newUserTaskSearchRequest()
+                        .filter(f -> f.state(UserTaskState.CREATED)
+                                .bpmnProcessId(PROCESSUS_EMPRUNT_ID).elementId("Task_Retour"))
+                        .sort(s -> s.creationDate().asc())
+                        .page(p -> p.from(debut).limit(100))
+                        .send().join();
+                for (var tache : taches.items()) {
+                    // Rattachement par la cle du processus, pas par une simple liste SQL.
+                    empruntRepository.findByProcessInstanceKey(tache.getProcessInstanceKey())
+                            .filter(emprunt -> emprunt.getStatut() == StatutEmprunt.EN_COURS)
+                            .ifPresent(emprunt -> resultat.add(new EmpruntATraiterResponse(
+                                    tache.getUserTaskKey(),
+                                    tache.getName(),
+                                    String.valueOf(tache.getCreationDate()),
+                                    EmpruntResponse.from(emprunt))));
+                }
+                if (taches.items().size() < 100) break;
+                offset += taches.items().size();
             }
             return resultat;
         } catch (Exception e) {
@@ -233,13 +260,13 @@ public class EmpruntServiceImpl implements EmpruntService {
 
     private void annulerProcessus(EmpruntEntity emprunt) {
         if (emprunt.getProcessInstanceKey() == null) {
-            return;
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Aucun processus Camunda associe a cet emprunt");
         }
         try {
             camundaClient.newCancelInstanceCommand(emprunt.getProcessInstanceKey()).send().join();
         } catch (Exception e) {
-            log.warn("Annulation du processus {} impossible (deja termine ou Camunda indisponible)",
-                    emprunt.getProcessInstanceKey(), e);
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
+                    "Camunda n'a pas pu annuler le processus, suppression annulee", e);
         }
     }
 }

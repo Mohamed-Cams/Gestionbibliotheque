@@ -33,18 +33,14 @@ public class MembreServiceImpl implements MembreService {
 
     @Override
     public MembreEntity creerMembre(MembreEntity membre) {
-        if (membre.getEmail() == null || membre.getEmail().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "L'email du membre est obligatoire");
-        }
+        valider(membre);
         membre.setId(0);
         return membreRepository.save(membre);
     }
 
     @Override
     public MembreEntity modifierMembre(int id, MembreEntity membre) {
-        if (membre.getEmail() == null || membre.getEmail().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "L'email du membre est obligatoire");
-        }
+        valider(membre);
         MembreEntity existant = obtenirMembre(id);
         existant.setNom(membre.getNom());
         existant.setPrenom(membre.getPrenom());
@@ -61,5 +57,15 @@ public class MembreServiceImpl implements MembreService {
                     "Ce membre a des emprunts associes, suppression impossible");
         }
         membreRepository.delete(existant);
+    }
+
+    private void valider(MembreEntity membre) {
+        if (membre.getNom() == null || membre.getNom().isBlank()
+                || membre.getPrenom() == null || membre.getPrenom().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nom et le prenom sont obligatoires");
+        }
+        if (membre.getEmail() == null || !membre.getEmail().matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Une adresse email valide est obligatoire");
+        }
     }
 }

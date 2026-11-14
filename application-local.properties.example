@@ -1,0 +1,10 @@
+# Copier ce fichier vers application-local.properties (ignore par Git).
+# Utiliser le mot de passe d'application Gmail du compte expediteur.
+spring.mail.username=votre-adresse@gmail.com
+spring.mail.password=VOTRE_MOT_DE_PASSE_APPLICATION_GMAIL
+
+# Si necessaire, personnaliser aussi les acces MySQL et le compte de connexion.
+# spring.datasource.username=root
+# spring.datasource.password=
+# bibliotheque.auth.email=admin@bibliotheque.fr
+# bibliotheque.auth.password=VOTRE_MOT_DE_PASSE

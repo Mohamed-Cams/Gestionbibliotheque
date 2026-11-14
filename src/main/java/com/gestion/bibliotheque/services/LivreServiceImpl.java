@@ -33,6 +33,7 @@ public class LivreServiceImpl implements LivreService {
 
     @Override
     public LivreEntity creerLivre(LivreEntity livre) {
+        valider(livre);
         livre.setNumero(0);          // force une insertion (id genere par la base)
         livre.setDisponible(true);
         return livreRepository.save(livre);
@@ -40,6 +41,7 @@ public class LivreServiceImpl implements LivreService {
 
     @Override
     public LivreEntity modifierLivre(int numero, LivreEntity livre) {
+        valider(livre);
         LivreEntity existant = obtenirLivre(numero);
         existant.setTitre(livre.getTitre());
         existant.setAuteur(livre.getAuteur());
@@ -55,5 +57,12 @@ public class LivreServiceImpl implements LivreService {
                     "Ce livre a des emprunts associes, suppression impossible");
         }
         livreRepository.delete(existant);
+    }
+
+    private void valider(LivreEntity livre) {
+        if (livre.getTitre() == null || livre.getTitre().isBlank()
+                || livre.getAuteur() == null || livre.getAuteur().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le titre et l'auteur sont obligatoires");
+        }
     }
 }
